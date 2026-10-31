@@ -12,19 +12,6 @@
     <meta name="author" content="Rodney Nogueira & Gustavo de Oliveira Reis" />
     <meta name="theme-color" content="#cee9f0" />
 
-    <meta property="og:type" content="website" />
-    <meta
-      property="og:title"
-      content="Loc_CCB - Localizador Condomínio Cisne Branco"
-    />
-    <meta
-      property="og:description"
-      content="Localize lotes, unidades e áreas comuns com rota direta no GPS."
-    />
-    <meta property="og:image" content="img/logo.jpg" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="img/logo.jpg" />
-
     <link rel="icon" type="image/png" href="img/favicon.png" />
     <link rel="apple-touch-icon" href="img/favicon.png" />
 
@@ -38,14 +25,91 @@
   </head>
   <body>
     <main class="layout-principal" id="layout-principal">
-      <!-- COLUNA ESQUERDA: LOGO + CARD + CONTATO DA PORTARIA FORA -->
       <div class="coluna-esquerda">
         <div class="logo-externa-wrap">
           <img src="img/logo.jpg" alt="Logo Loc_CCB" class="logo-img" />
         </div>
 
         <section class="card-painel">
-          <!-- BOTÃO EXPANSÍVEL DE ÁREAS COMUNS -->
+          <!-- BOTÃO DE LIMPEZA NO TOPO (SÓ APARECE NO PC APÓS GERAR QR CODE) -->
+          <button
+            type="button"
+            id="btn-limpar-pc"
+            class="btn-novo-atendimento"
+            onclick="limparSelecaoCompleta()"
+            style="display: none"
+          >
+            🔄 Limpar para Próximo Visitante
+          </button>
+
+          <div class="card-deslocamento">
+            <span class="titulo-deslocamento"
+              >Tipo de Deslocamento <small>(Obrigatório)</small></span
+            >
+            <div class="opcoes-deslocamento">
+              <button
+                type="button"
+                class="btn-modo"
+                id="modo-driving"
+                onclick="selecionarModo('driving')"
+              >
+                <svg viewBox="0 0 24 24" class="icone-modo">
+                  <path
+                    fill="currentColor"
+                    d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77L6.85 7zM19 17H5v-5h14v5z"
+                  />
+                  <circle fill="currentColor" cx="7.5" cy="14.5" r="1.5" />
+                  <circle fill="currentColor" cx="16.5" cy="14.5" r="1.5" />
+                </svg>
+                <span>Carro</span>
+              </button>
+              <button
+                type="button"
+                class="btn-modo"
+                id="modo-two-wheeler"
+                onclick="selecionarModo('two-wheeler')"
+              >
+                <svg viewBox="0 0 24 24" class="icone-modo">
+                  <path
+                    fill="currentColor"
+                    d="M19 7c0-1.1-.9-2-2-2h-3v2h3v2.65L13.52 14H10V9H6c-2.21 0-4 1.79-4 4v3h2c0 1.66 1.34 3 3 3s3-1.34 3-3h4.48L19 10.35V7zM7 17c-.55 0-1-.45-1-1h2c0 .55-.45 1-1 1z"
+                  />
+                  <path
+                    fill="currentColor"
+                    d="M5 6h5v2H5zM19 13c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm0 4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"
+                  />
+                </svg>
+                <span>Moto</span>
+              </button>
+              <button
+                type="button"
+                class="btn-modo"
+                id="modo-walking"
+                onclick="selecionarModo('walking')"
+              >
+                <svg viewBox="0 0 24 24" class="icone-modo">
+                  <path
+                    fill="currentColor"
+                    d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"
+                  />
+                </svg>
+                <span>A pé</span>
+              </button>
+            </div>
+
+            <div id="box-placa" class="box-placa" style="display: none">
+              <label for="placa">PLACA DO VEÍCULO</label>
+              <input
+                type="text"
+                id="placa"
+                maxlength="8"
+                placeholder="Ex: ABC1D23"
+                oninput="formatarPlaca()"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
           <div class="bloco-areas-comuns">
             <button
               type="button"
@@ -61,7 +125,6 @@
             ></div>
           </div>
 
-          <!-- CAMPOS DE BUSCA: LOTE, UNIDADE E RUA/LADO -->
           <div class="grid-campos">
             <div class="campo-item">
               <label for="lote">LOTE</label>
@@ -74,7 +137,6 @@
                 autocomplete="off"
               />
             </div>
-
             <div class="campo-item">
               <label for="unidade">UNIDADE</label>
               <input
@@ -85,7 +147,6 @@
                 autocomplete="off"
               />
             </div>
-
             <div class="campo-item">
               <label>RUA / LADO</label>
               <div id="status-rua" class="rua-display">
@@ -93,35 +154,31 @@
                 <small id="txt-lado"></small>
               </div>
             </div>
-
             <div class="campo-item btn-add-wrap">
               <button
                 type="button"
-                class="btn-add"
+                id="btn-add-fila"
+                class="btn-add desativado"
                 onclick="adicionarNaFila()"
-                title="Adicionar à lista de entregas"
+                title="Adicionar à lista"
+                disabled
               >
                 +
               </button>
             </div>
           </div>
 
-          <!-- SUGESTÕES CLICÁVEIS DE UNIDADES DO LOTE -->
           <div
             id="sugestoes-unidades"
             class="sugestoes-box"
             style="display: none"
           >
-            <span class="label-sugestao"
-              >Unidades cadastradas neste lote (clique para selecionar):</span
-            >
+            <span class="label-sugestao">Unidades cadastradas neste lote:</span>
             <div id="lista-chips-unidades" class="chips-container"></div>
           </div>
 
-          <!-- MENSAGEM DE ERRO OU ALERTA DE TERRENO -->
           <div id="erro" class="alerta-erro" style="display: none"></div>
 
-          <!-- FILA DE MÚLTIPLAS ENTREGAS -->
           <div id="fila-container" class="fila-box" style="display: none">
             <div class="fila-header">
               <span
@@ -134,22 +191,20 @@
             <ul id="lista-fila" class="lista-fila"></ul>
           </div>
 
-          <!-- BOTÃO PRINCIPAL DE AÇÃO -->
           <button
             type="button"
             id="btn-localizar"
-            class="btn-primario"
+            class="btn-primario desativado"
             onclick="processarRotas()"
+            disabled
           >
             Localizar Endereço
           </button>
 
-          <!-- ÁREA DE RESULTADOS (QR CODE) -->
           <div id="resultado" class="resultado-box" style="display: none">
             <div id="lista-resultados-qr"></div>
           </div>
 
-          <!-- BOTÃO FIXO DE RETORNO À PORTARIA -->
           <a
             id="btn-rota-portaria"
             href="#"
@@ -160,7 +215,6 @@
           </a>
         </section>
 
-        <!-- CONTATO DA PORTARIA FORA DO CARD CINZA COM ÍCONE DO WHATSAPP -->
         <a
           href="https://wa.me/5522997120131"
           target="_blank"
@@ -176,7 +230,6 @@
         </a>
       </div>
 
-      <!-- COLUNA DIREITA: MAPA AMPLIADO -->
       <section class="card-mapa" id="painel-mapa">
         <div class="mapa-topo">
           <span id="titulo-mapa-preview">Prévia do Trajeto no Condomínio</span>
