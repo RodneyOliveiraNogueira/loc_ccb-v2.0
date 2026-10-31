@@ -1,7 +1,7 @@
 const SHEET_ID = "1QDUCLr8tZzTbxc1dwSf0Pl-0U7MjGyu7IzCgq95za1o";
 const NOME_ABA = "Cadastro";
 const URL_WEBHOOK =
-  "https://script.google.com/macros/s/AKfycbwwYNic6HrlhNeps58h2MERfJZ-DOcfXm2wbfPWRoAP1wKvWsrYVCbqf_kcuduSjzNw/exec";
+  "https://script.google.com/macros/s/AKfycbyH_p9xjMHImhCTg0QH3bo0S1M51k5g2enI1fmoP92iR05iHI3geaQEv8bfJuCKmipR/exec";
 
 let COORD_PORTARIA = { lat: -22.816945097334372, lng: -42.088560977464915 };
 
@@ -116,7 +116,6 @@ async function carregarPlanilha() {
     );
     const dados = JSON.parse(jsonString);
 
-    // Mapeamento dos Lotes (Colunas A a E - Índices 0 a 4)
     baseEnderecos = dados.table.rows
       .map((linha) => {
         const lote = obterValorCelula(linha.c[0]);
@@ -142,16 +141,14 @@ async function carregarPlanilha() {
           item.coordenada !== "",
       );
 
-    // Mapeamento das Áreas Comuns (Colunas H a K - Índices 7 a 10)
     baseAreasComuns = dados.table.rows
       .map((linha) => {
-        // A API gviz às vezes reduz o array 'c' se as células da direita estiverem vazias.
         if (linha.c.length <= 10) return null;
 
-        const tipoArea = obterValorCelula(linha.c[7]); // H
-        const nomeArea = obterValorCelula(linha.c[8]); // I
-        const ladoArea = obterValorCelula(linha.c[9]); // J
-        const coordenadaArea = obterValorCelula(linha.c[10]); // K
+        const tipoArea = obterValorCelula(linha.c[7]);
+        const nomeArea = obterValorCelula(linha.c[8]);
+        const ladoArea = obterValorCelula(linha.c[9]);
+        const coordenadaArea = obterValorCelula(linha.c[10]);
 
         if (!tipoArea || (tipoArea.toUpperCase() === "ÁREA COMUM" && !nomeArea))
           return null;
@@ -171,7 +168,6 @@ async function carregarPlanilha() {
           item !== null && item.nomeArea !== "" && item.coordenada !== "",
       );
 
-    // Define a portaria a partir da base de áreas comuns
     const itemPortaria = baseAreasComuns.find((item) =>
       item.nomeArea.toLowerCase().includes("portaria"),
     );
@@ -207,7 +203,6 @@ function renderizarBotoesAreasComuns() {
   const areasUnicas = [];
   const coordsUsadas = new Set();
 
-  // Utiliza a base específica de Áreas Comuns
   baseAreasComuns.forEach((area) => {
     const coordStr = area.coordenada.replace(/\s+/g, "");
     if (!coordsUsadas.has(coordStr)) {
@@ -238,7 +233,7 @@ function selecionarAreaComum(areaObj) {
   const btnLocalizar = document.getElementById("btn-localizar");
   if (btnLocalizar) {
     btnLocalizar.classList.remove("desativado");
-    btnLocalizar.removeAttribute("disabled");
+    btnLocalizar.disabled = false;
   }
 
   processarRotas([areaObj]);
@@ -248,24 +243,25 @@ function atualizarEstadoBotoesAcao() {
   const loteVal = document.getElementById("lote").value.trim();
   const btnAdd = document.getElementById("btn-add-fila");
   const btnLocalizar = document.getElementById("btn-localizar");
+  const temFila = filaEntregas.length > 0;
 
-  if (loteVal.length > 0) {
-    if (btnAdd) {
+  if (btnAdd) {
+    if (loteVal.length > 0) {
       btnAdd.classList.remove("desativado");
-      btnAdd.removeAttribute("disabled");
-    }
-    if (btnLocalizar) {
-      btnLocalizar.classList.remove("desativado");
-      btnLocalizar.removeAttribute("disabled");
-    }
-  } else {
-    if (btnAdd) {
+      btnAdd.disabled = false;
+    } else {
       btnAdd.classList.add("desativado");
-      btnAdd.setAttribute("disabled", "true");
+      btnAdd.disabled = true;
     }
-    if (btnLocalizar) {
+  }
+
+  if (btnLocalizar) {
+    if (loteVal.length > 0 || temFila) {
+      btnLocalizar.classList.remove("desativado");
+      btnLocalizar.disabled = false;
+    } else {
       btnLocalizar.classList.add("desativado");
-      btnLocalizar.setAttribute("disabled", "true");
+      btnLocalizar.disabled = true;
     }
   }
 }
@@ -530,13 +526,14 @@ function adicionarNaFila() {
   }
 
   filaEntregas.push(casa);
-  atualizarInterfaceFila();
   salvarFilaLocal();
+
   document.getElementById("lote").value = "";
   document.getElementById("unidade").value = "";
   document.getElementById("sugestoes-unidades").style.display = "none";
   limparVisorRua();
-  atualizarEstadoBotoesAcao();
+
+  atualizarInterfaceFila();
   document.getElementById("lote").focus();
 }
 
@@ -567,16 +564,15 @@ function atualizarInterfaceFila() {
   if (filaEntregas.length === 0) {
     container.style.display = "none";
     btnLocalizar.textContent = "Localizar Endereço";
-    return;
+  } else {
+    container.style.display = "block";
+    btnLocalizar.textContent =
+      filaEntregas.length === 1
+        ? "Gerar Rota (1 Endereço)"
+        : `Finalizar e Gerar Rotas (${filaEntregas.length} Endereços)`;
   }
 
-  container.style.display = "block";
-  btnLocalizar.textContent =
-    filaEntregas.length === 1
-      ? "Gerar Rota (1 Endereço)"
-      : `Finalizar e Gerar Rotas (${filaEntregas.length} Endereços)`;
-  btnLocalizar.classList.remove("desativado");
-  btnLocalizar.removeAttribute("disabled");
+  atualizarEstadoBotoesAcao();
 
   const iconeLixeiraSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
 
@@ -720,7 +716,7 @@ function processarRotas(listaForcada = null) {
   blocoDiv.innerHTML = `
     <p class="titulo-destino-qr">${tituloBloco}</p>
     <div id="${qrId}" class="qrcode-box"></div>
-    <p class="dica-qr">Aponte a câmera do celular para abrir a rota</p>
+    <p class="dica-qr">Aponte a câmara do telemóvel para abrir a rota</p>
     <a href="${urlBotao}" target="_blank" class="btn-maps" onclick="limparSelecaoCompleta()">${textoBotao}</a>
   `;
 
@@ -735,6 +731,7 @@ function processarRotas(listaForcada = null) {
   if (!listaForcada) {
     filaEntregas = [];
     salvarFilaLocal();
+    atualizarInterfaceFila();
   }
 }
 
