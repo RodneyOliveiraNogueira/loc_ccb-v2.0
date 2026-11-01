@@ -11,7 +11,7 @@
     />
     <meta name="author" content="Rodney Nogueira & Gustavo de Oliveira Reis" />
     <meta name="theme-color" content="#cee9f0" />
-    <!-- Tags para Preview no WhatsApp e Redes Sociais -->
+
     <meta property="og:type" content="website" />
     <meta
       property="og:url"
@@ -44,12 +44,12 @@
   <body>
     <main class="layout-principal" id="layout-principal">
       <div class="coluna-esquerda">
-        <div class="logo-externa-wrap">
-          <img src="img/logo.jpg" alt="Logo Loc_CCB" class="logo-img" />
-        </div>
+        <header class="header-texto">
+          <h1>LOC_CCB</h1>
+          <p>Localizador de Lote/Unidade</p>
+        </header>
 
         <section class="card-painel">
-          <!-- BOTÃO DE LIMPEZA NO TOPO (SÓ APARECE NO PC APÓS GERAR QR CODE) -->
           <button
             type="button"
             id="btn-limpar-pc"
@@ -57,167 +57,278 @@
             onclick="limparSelecaoCompleta()"
             style="display: none"
           >
-            🔄 Limpar para Próximo Visitante
+            Limpar para Próximo Visitante
           </button>
 
-          <div class="card-deslocamento">
-            <span class="titulo-deslocamento"
-              >Tipo de Deslocamento <small>(Obrigatório)</small></span
-            >
-            <div class="opcoes-deslocamento">
-              <button
-                type="button"
-                class="btn-modo"
-                id="modo-driving"
-                onclick="selecionarModo('driving')"
-              >
-                <svg viewBox="0 0 24 24" class="icone-modo">
-                  <path
-                    fill="currentColor"
-                    d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77L6.85 7zM19 17H5v-5h14v5z"
-                  />
-                  <circle fill="currentColor" cx="7.5" cy="14.5" r="1.5" />
-                  <circle fill="currentColor" cx="16.5" cy="14.5" r="1.5" />
-                </svg>
-                <span>Carro</span>
-              </button>
-              <button
-                type="button"
-                class="btn-modo"
-                id="modo-two-wheeler"
-                onclick="selecionarModo('two-wheeler')"
-              >
-                <svg viewBox="0 0 24 24" class="icone-modo">
-                  <path
-                    fill="currentColor"
-                    d="M19 7c0-1.1-.9-2-2-2h-3v2h3v2.65L13.52 14H10V9H6c-2.21 0-4 1.79-4 4v3h2c0 1.66 1.34 3 3 3s3-1.34 3-3h4.48L19 10.35V7zM7 17c-.55 0-1-.45-1-1h2c0 .55-.45 1-1 1z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M5 6h5v2H5zM19 13c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm0 4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"
-                  />
-                </svg>
-                <span>Moto</span>
-              </button>
-              <button
-                type="button"
-                class="btn-modo"
-                id="modo-walking"
-                onclick="selecionarModo('walking')"
-              >
-                <svg viewBox="0 0 24 24" class="icone-modo">
-                  <path
-                    fill="currentColor"
-                    d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"
-                  />
-                </svg>
-                <span>A pé</span>
-              </button>
-            </div>
-
-            <div id="box-placa" class="box-placa" style="display: none">
-              <label for="placa">PLACA DO VEÍCULO</label>
-              <input
-                type="text"
-                id="placa"
-                maxlength="8"
-                placeholder="Ex: ABC1D23"
-                oninput="formatarPlaca()"
-                autocomplete="off"
-              />
-            </div>
-          </div>
-
-          <div class="bloco-areas-comuns">
-            <button
-              type="button"
-              class="btn-areas-toggle"
-              onclick="alternarAreasComuns()"
-            >
-              📍 Áreas Comuns e Lazer (Clique para abrir)
-            </button>
+          <div class="card-deslocamento" id="card-deslocamento">
             <div
-              id="chips-areas-comuns"
-              class="chips-container"
-              style="display: none"
-            ></div>
-          </div>
+              class="header-deslocamento"
+              id="header-deslocamento"
+              onclick="reabrirDeslocamento()"
+            >
+              <span class="titulo-deslocamento" id="titulo-deslocamento">
+                TIPO DE DESLOCAMENTO
+                <small id="tag-obrigatorio">(Obrigatório)</small>
+              </span>
+              <span
+                class="resumo-deslocamento"
+                id="resumo-deslocamento"
+                style="display: none"
+              ></span>
+            </div>
 
-          <div class="grid-campos">
-            <div class="campo-item">
-              <label for="lote">LOTE</label>
-              <input
-                type="text"
-                inputmode="numeric"
-                id="lote"
-                placeholder="Ex: 55"
-                oninput="aoDigitarLote()"
-                autocomplete="off"
-              />
-            </div>
-            <div class="campo-item">
-              <label for="unidade">UNIDADE</label>
-              <input
-                type="text"
-                id="unidade"
-                placeholder="Opcional"
-                oninput="validarEmTempoReal()"
-                autocomplete="off"
-              />
-            </div>
-            <div class="campo-item">
-              <label>RUA / LADO</label>
-              <div id="status-rua" class="rua-display">
-                <span id="txt-rua">--</span>
-                <small id="txt-lado"></small>
+            <div id="corpo-deslocamento">
+              <div class="opcoes-deslocamento">
+                <button
+                  type="button"
+                  class="btn-modo"
+                  id="modo-driving"
+                  onclick="selecionarModo('driving')"
+                >
+                  <svg viewBox="0 0 24 24" class="icone-modo">
+                    <path
+                      fill="currentColor"
+                      d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77L6.85 7zM19 17H5v-5h14v5z"
+                    />
+                    <circle fill="currentColor" cx="7.5" cy="14.5" r="1.5" />
+                    <circle fill="currentColor" cx="16.5" cy="14.5" r="1.5" />
+                  </svg>
+                  <span>Carro</span>
+                </button>
+                <button
+                  type="button"
+                  class="btn-modo"
+                  id="modo-two-wheeler"
+                  onclick="selecionarModo('two-wheeler')"
+                >
+                  <svg viewBox="0 0 24 24" class="icone-modo">
+                    <path
+                      fill="currentColor"
+                      d="M19 7c0-1.1-.9-2-2-2h-3v2h3v2.65L13.52 14H10V9H6c-2.21 0-4 1.79-4 4v3h2c0 1.66 1.34 3 3 3s3-1.34 3-3h4.48L19 10.35V7zM7 17c-.55 0-1-.45-1-1h2c0 .55-.45 1-1 1z"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M5 6h5v2H5zM19 13c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm0 4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"
+                    />
+                  </svg>
+                  <span>Moto</span>
+                </button>
+                <button
+                  type="button"
+                  class="btn-modo"
+                  id="modo-walking"
+                  onclick="selecionarModo('walking')"
+                >
+                  <svg viewBox="0 0 24 24" class="icone-modo">
+                    <path
+                      fill="currentColor"
+                      d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"
+                    />
+                  </svg>
+                  <span>A pé</span>
+                </button>
+              </div>
+
+              <div id="dados-acesso-extra" style="display: none">
+                <div
+                  id="box-placa"
+                  class="box-campo-extra"
+                  style="display: none"
+                >
+                  <label for="placa">PLACA</label>
+                  <input
+                    type="text"
+                    id="placa"
+                    maxlength="8"
+                    placeholder="Ex: ABC1D23"
+                    oninput="formatarPlaca()"
+                    autocomplete="off"
+                  />
+                </div>
+
+                <div class="box-campo-extra">
+                  <label for="nome-visitante">NOME</label>
+                  <input
+                    type="text"
+                    id="nome-visitante"
+                    placeholder="Nome e sobrenome"
+                    style="text-transform: uppercase"
+                    oninput="esconderErro()"
+                    autocomplete="off"
+                  />
+                </div>
+
+                <div class="box-grupo-botoes">
+                  <span class="label-mini">PERFIL DE ACESSO</span>
+                  <div class="opcoes-mini">
+                    <button
+                      type="button"
+                      class="btn-chip-acesso"
+                      id="perfil-Visitante"
+                      onclick="selecionarPerfil('Visitante')"
+                    >
+                      Visitante
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-chip-acesso"
+                      id="perfil-Entregador"
+                      onclick="selecionarPerfil('Entregador')"
+                    >
+                      Entregador
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-chip-acesso"
+                      id="perfil-Prestador"
+                      onclick="selecionarPerfil('Prestador')"
+                    >
+                      Prestador
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  class="box-grupo-botoes"
+                  id="box-cnh-pc"
+                  style="display: none"
+                >
+                  <span class="label-mini" id="label-documento"
+                    >PORTA CNH?</span
+                  >
+                  <div class="opcoes-mini">
+                    <button
+                      type="button"
+                      class="btn-chip-acesso"
+                      id="cnh-Sim"
+                      onclick="selecionarCNH('Sim')"
+                    >
+                      Sim
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-chip-acesso"
+                      id="cnh-Não"
+                      onclick="selecionarCNH('Não')"
+                    >
+                      Não
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  class="btn-ok-deslocamento"
+                  onclick="confirmarDeslocamento()"
+                >
+                  OK, Continuar
+                </button>
               </div>
             </div>
-            <div class="campo-item btn-add-wrap">
-              <button
-                type="button"
-                id="btn-add-fila"
-                class="btn-add desativado"
-                onclick="adicionarNaFila()"
-                title="Adicionar à lista"
-                disabled
-              >
-                +
-              </button>
-            </div>
           </div>
 
-          <div
-            id="sugestoes-unidades"
-            class="sugestoes-box"
-            style="display: none"
-          >
-            <span class="label-sugestao">Unidades cadastradas neste lote:</span>
-            <div id="lista-chips-unidades" class="chips-container"></div>
+          <div id="sessao-busca" style="display: none">
+            <div class="bloco-areas-comuns">
+              <button
+                type="button"
+                id="btn-toggle-areas"
+                class="btn-areas-toggle"
+                onclick="alternarAreasComuns()"
+              >
+                Áreas Comuns e Lazer (Clique para abrir)
+              </button>
+              <div
+                id="chips-areas-comuns"
+                class="chips-container"
+                style="display: none"
+              ></div>
+            </div>
+
+            <div id="container-busca-lotes">
+              <div class="grid-campos">
+                <div class="campo-item">
+                  <label for="lote">LOTE</label>
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    id="lote"
+                    placeholder="Ex: 55"
+                    oninput="aoDigitarLote()"
+                    autocomplete="off"
+                  />
+                </div>
+                <div class="campo-item">
+                  <label for="unidade">UNIDADE</label>
+                  <input
+                    type="text"
+                    id="unidade"
+                    placeholder="Opcional"
+                    oninput="validarEmTempoReal()"
+                    autocomplete="off"
+                  />
+                </div>
+                <div class="campo-item">
+                  <label>RUA / LADO</label>
+                  <div id="status-rua" class="rua-display">
+                    <span id="txt-rua">--</span>
+                    <small id="txt-lado"></small>
+                  </div>
+                </div>
+                <div class="campo-item btn-add-wrap">
+                  <button
+                    type="button"
+                    id="btn-add-fila"
+                    class="btn-add desativado"
+                    onclick="adicionarNaFila()"
+                    title="Adicionar à lista"
+                    disabled
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div
+                id="sugestoes-unidades"
+                class="sugestoes-box"
+                style="display: none"
+              >
+                <span class="label-sugestao"
+                  >Unidades cadastradas neste lote:</span
+                >
+                <div id="lista-chips-unidades" class="chips-container"></div>
+              </div>
+
+              <div id="fila-container" class="fila-box" style="display: none">
+                <div class="fila-header">
+                  <span
+                    >Fila de Endereços (<strong id="contador-fila">0</strong
+                    >)</span
+                  >
+                  <button
+                    type="button"
+                    class="btn-limpar"
+                    onclick="limparFila()"
+                  >
+                    Limpar tudo
+                  </button>
+                </div>
+                <ul id="lista-fila" class="lista-fila"></ul>
+              </div>
+
+              <button
+                type="button"
+                id="btn-localizar"
+                class="btn-primario desativado"
+                onclick="processarRotas()"
+                disabled
+              >
+                Localizar Endereço
+              </button>
+            </div>
           </div>
 
           <div id="erro" class="alerta-erro" style="display: none"></div>
-
-          <div id="fila-container" class="fila-box" style="display: none">
-            <div class="fila-header">
-              <span
-                >Fila de Endereços (<strong id="contador-fila">0</strong>)</span
-              >
-              <button type="button" class="btn-limpar" onclick="limparFila()">
-                Limpar tudo
-              </button>
-            </div>
-            <ul id="lista-fila" class="lista-fila"></ul>
-          </div>
-
-          <button
-            type="button"
-            id="btn-localizar"
-            class="btn-primario desativado"
-            onclick="processarRotas()"
-            disabled
-          >
-            Localizar Endereço
-          </button>
 
           <div id="resultado" class="resultado-box" style="display: none">
             <div id="lista-resultados-qr"></div>
@@ -246,8 +357,30 @@
           </svg>
           Contato Portaria: (22) 99712-0131
         </a>
+
+        <section
+          id="painel-ultimos-acessos"
+          class="card-ultimos-acessos"
+          style="display: none"
+        >
+          <div class="header-ultimos">
+            <span>Acessos na Última Hora (Clique p/ Mapa)</span>
+            <button
+              type="button"
+              class="btn-refresh-acessos"
+              onclick="carregarUltimosAcessos()"
+              title="Atualizar lista"
+            >
+              Atualizar
+            </button>
+          </div>
+          <ul id="lista-ultimos-acessos" class="lista-ultimos">
+            <li class="item-vazio">Carregando registros...</li>
+          </ul>
+        </section>
       </div>
 
+      <!-- MAPA EXPANDIDO OCUPANDO TODO O ESPAÇO À DIREITA -->
       <section class="card-mapa" id="painel-mapa">
         <div class="mapa-topo">
           <span id="titulo-mapa-preview">Prévia do Trajeto no Condomínio</span>
@@ -257,7 +390,7 @@
         </div>
         <div id="mapa-interativo" class="mapa-canvas"></div>
         <p class="legenda-mapa">
-          🔵 Ponto Azul: Portaria &nbsp;|&nbsp; 🔴 Ponto Vermelho: Destino(s)
+          Ponto Azul: Portaria &nbsp;|&nbsp; Ponto Vermelho: Destino(s)
           selecionado(s)
         </p>
       </section>

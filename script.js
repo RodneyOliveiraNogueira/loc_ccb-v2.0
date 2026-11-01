@@ -1,28 +1,55 @@
 const SHEET_ID = "1QDUCLr8tZzTbxc1dwSf0Pl-0U7MjGyu7IzCgq95za1o";
 const NOME_ABA = "Cadastro";
 const URL_WEBHOOK =
-  "https://script.google.com/macros/s/AKfycbyH_p9xjMHImhCTg0QH3bo0S1M51k5g2enI1fmoP92iR05iHI3geaQEv8bfJuCKmipR/exec";
+  "https://script.google.com/macros/s/AKfycbwwYNic6HrlhNeps58h2MERfJZ-DOcfXm2wbfPWRoAP1wKvWsrYVCbqf_kcuduSjzNw/exec";
 
 let COORD_PORTARIA = { lat: -22.816945097334372, lng: -42.088560977464915 };
 
 let baseEnderecos = [];
 let baseAreasComuns = [];
+let historicoAcessosCache = [];
 let filaEntregas = [];
 let mapaLeaflet = null;
 let camadaMarcadores = null;
+
 let modoViagemSelecionado = "";
+let perfilSelecionado = "";
+let cnhSelecionada = "";
+let deslocamentoConfirmado = false;
 
 window.onload = async () => {
+  configurarVisibilidadeDispositivo();
+  if (!ehDispositivoMovel()) {
+    await carregarUltimosAcessos();
+  }
   await carregarPlanilha();
   configurarBotaoPortaria();
   inicializarMapaPC();
   carregarFilaLocal();
-  carregarUltimaPlaca();
+  carregarDadosSalvosCelular();
   atualizarEstadoBotoesAcao();
+
+  if (!ehDispositivoMovel()) {
+    setInterval(carregarUltimosAcessos, 20000);
+  }
 };
 
 function ehDispositivoMovel() {
   return /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent);
+}
+
+function configurarVisibilidadeDispositivo() {
+  const ehCelular = ehDispositivoMovel();
+  const btnPortaria = document.getElementById("btn-rota-portaria");
+  const btnContatoFora = document.querySelector(".btn-contato-portaria-fora");
+  const painelUltimos = document.getElementById("painel-ultimos-acessos");
+
+  if (btnPortaria) btnPortaria.style.display = ehCelular ? "block" : "none";
+  if (btnContatoFora)
+    btnContatoFora.style.display = ehCelular ? "flex" : "none";
+  if (painelUltimos) painelUltimos.style.display = ehCelular ? "none" : "block";
+
+  // Nota: A exibição do box-cnh-pc no PC agora é controlada diretamente ao clicar em Carro, Moto ou A pé na função selecionarModo().
 }
 
 function selecionarModo(modo) {
@@ -35,46 +62,123 @@ function selecionarModo(modo) {
   const btnAtivo = document.getElementById(`modo-${modo}`);
   if (btnAtivo) btnAtivo.classList.add("ativo");
 
+  const dadosExtra = document.getElementById("dados-acesso-extra");
   const boxPlaca = document.getElementById("box-placa");
+  const inputPlaca = document.getElementById("placa");
+  const boxCnhPc = document.getElementById("box-cnh-pc"); // Bloco do documento
+  const labelDoc = document.getElementById("label-documento");
+
+  dadosExtra.style.display = "flex";
+
+  // Se for no PC, exibe o bloco de documento para qualquer modo (Carro, Moto ou A pé)
+  if (!ehDispositivoMovel() && boxCnhPc) {
+    boxCnhPc.style.display = "flex";
+  }
+
   if (modo === "driving" || modo === "two-wheeler") {
     boxPlaca.style.display = "flex";
-    carregarUltimaPlaca();
+    if (labelDoc) labelDoc.textContent = "PORTA CNH?";
+    carregarDadosSalvosCelular();
   } else {
     boxPlaca.style.display = "none";
-    const inputPlaca = document.getElementById("placa");
     if (inputPlaca) inputPlaca.value = "";
+    if (labelDoc) labelDoc.textContent = "PORTA ID?"; // Exibe Porta ID quando for a pé
   }
+
   configurarBotaoPortaria();
+
+  if (ehDispositivoMovel()) {
+    const placaSalva = localStorage.getItem("loc_ccb_ultima_placa") || "";
+    const nomeSalvo = localStorage.getItem("loc_ccb_nome") || "";
+    const perfilSalvo = localStorage.getItem("loc_ccb_perfil") || "";
+
+    const exigePlaca = modo === "driving" || modo === "two-wheeler";
+    const placaValida =
+      !exigePlaca ||
+      /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/.test(
+        placaSalva.replace(/[^A-Z0-9]/g, ""),
+      );
+
+    if (placaValida && nomeSalvo && perfilSalvo) {
+      if (exigePlaca && inputPlaca) inputPlaca.value = placaSalva;
+      document.getElementById("nome-visitante").value = nomeSalvo;
+      selecionarPerfil(perfilSalvo);
+      confirmarDeslocamento();
+    }
+  }
+}
+
+function selecionarPerfil(perfil) {
+  esconderErro();
+  perfilSelecionado = perfil;
+  document
+    .querySelectorAll("#dados-acesso-extra .btn-chip-acesso[id^='perfil-']")
+    .forEach((b) => b.classList.remove("ativo"));
+  const btn = document.getElementById(`perfil-${perfil}`);
+  if (btn) btn.classList.add("ativo");
+}
+
+function selecionarCNH(op) {
+  esconderErro();
+  cnhSelecionada = op;
+  document
+    .querySelectorAll("#box-cnh-pc .btn-chip-acesso")
+    .forEach((b) => b.classList.remove("ativo"));
+  const btn = document.getElementById(`cnh-${op}`);
+  if (btn) btn.classList.add("ativo");
 }
 
 function formatarPlaca() {
   esconderErro();
   const input = document.getElementById("placa");
-  input.value = input.value.toUpperCase().replace(/[^A-Z0-9-]/g, "");
+  const placaDigitada = input.value.toUpperCase().replace(/[^A-Z0-9-]/g, "");
+  input.value = placaDigitada;
+
+  if (placaDigitada.length >= 7 && historicoAcessosCache.length > 0) {
+    const placaLimpaBusca = placaDigitada.replace(/[^A-Z0-9]/g, "");
+    const registroRecorrente = historicoAcessosCache.find(
+      (item) => item.placa.replace(/[^A-Z0-9]/g, "") === placaLimpaBusca,
+    );
+
+    if (registroRecorrente) {
+      document.getElementById("nome-visitante").value = registroRecorrente.nome;
+      if (registroRecorrente.perfil) {
+        selecionarPerfil(registroRecorrente.perfil);
+      }
+      if (!ehDispositivoMovel() && registroRecorrente.cnh) {
+        const cnhNormalizada = registroRecorrente.cnh
+          .toLowerCase()
+          .includes("sim")
+          ? "Sim"
+          : "Não";
+        selecionarCNH(cnhNormalizada);
+      }
+    }
+  }
 }
 
-function carregarUltimaPlaca() {
+function carregarDadosSalvosCelular() {
+  if (!ehDispositivoMovel()) return;
+
   const inputPlaca = document.getElementById("placa");
-  if (!inputPlaca) return;
+  const inputNome = document.getElementById("nome-visitante");
 
-  if (!ehDispositivoMovel()) {
-    inputPlaca.value = "";
-    return;
-  }
+  const ultimaPlaca = localStorage.getItem("loc_ccb_ultima_placa");
+  const ultimoNome = localStorage.getItem("loc_ccb_nome");
+  const ultimoPerfil = localStorage.getItem("loc_ccb_perfil");
 
-  const ultima = localStorage.getItem("loc_ccb_ultima_placa");
-  if (ultima && !inputPlaca.value) {
-    inputPlaca.value = ultima;
-  }
+  if (ultimaPlaca && inputPlaca && !inputPlaca.value)
+    inputPlaca.value = ultimaPlaca;
+  if (ultimoNome && inputNome && !inputNome.value) inputNome.value = ultimoNome;
+  if (ultimoPerfil && !perfilSelecionado) selecionarPerfil(ultimoPerfil);
 }
 
 function validarDeslocamento() {
   if (!modoViagemSelecionado) {
-    mostrarErro(
-      "Selecione o Tipo de Deslocamento (Carro, Moto ou A pé) acima.",
-    );
+    mostrarErro("Selecione o Tipo de Deslocamento (Carro, Moto ou A pé).");
     return false;
   }
+
   if (
     modoViagemSelecionado === "driving" ||
     modoViagemSelecionado === "two-wheeler"
@@ -92,7 +196,89 @@ function validarDeslocamento() {
       localStorage.setItem("loc_ccb_ultima_placa", placaLimpa);
     }
   }
+
+  const inputNome = document.getElementById("nome-visitante");
+  const nomeLimpo = inputNome ? inputNome.value.trim().toUpperCase() : "";
+  if (nomeLimpo.length < 2) {
+    mostrarErro("Informe o seu Nome para identificação na portaria.");
+    if (inputNome) inputNome.focus();
+    return false;
+  }
+
+  if (!perfilSelecionado) {
+    mostrarErro("Selecione o Perfil (Visitante, Entregador ou Prestador).");
+    return false;
+  }
+
+  if (
+    !ehDispositivoMovel() &&
+    !cnhSelecionada &&
+    modoViagemSelecionado !== "walking"
+  ) {
+    mostrarErro("Informe se o condutor porta CNH (Sim ou Não).");
+    return false;
+  }
+
+  if (ehDispositivoMovel()) {
+    localStorage.setItem("loc_ccb_nome", nomeLimpo);
+    localStorage.setItem("loc_ccb_perfil", perfilSelecionado);
+  }
+
   return true;
+}
+
+function confirmarDeslocamento() {
+  esconderErro();
+  if (!validarDeslocamento()) return;
+
+  deslocamentoConfirmado = true;
+
+  const nomesModo = {
+    driving: "Carro",
+    "two-wheeler": "Moto",
+    walking: "A pé",
+  };
+  const nomeModo = nomesModo[modoViagemSelecionado] || modoViagemSelecionado;
+  const placaTxt =
+    modoViagemSelecionado === "walking"
+      ? ""
+      : ` (${document.getElementById("placa").value.toUpperCase()})`;
+  const nomeVisitante = document
+    .getElementById("nome-visitante")
+    .value.trim()
+    .toUpperCase()
+    .split(" ")[0];
+
+  const cardDeslocamento = document.getElementById("card-deslocamento");
+  const corpoDeslocamento = document.getElementById("corpo-deslocamento");
+  const tagObrigatorio = document.getElementById("tag-obrigatorio");
+  const resumo = document.getElementById("resumo-deslocamento");
+
+  cardDeslocamento.classList.add("recolhido");
+  corpoDeslocamento.style.display = "none";
+  if (tagObrigatorio) tagObrigatorio.style.display = "none";
+
+  resumo.textContent = `${nomeModo}${placaTxt} • ${nomeVisitante}`;
+  resumo.style.display = "inline-block";
+
+  const sessaoBusca = document.getElementById("sessao-busca");
+  sessaoBusca.style.display = "flex";
+  document.getElementById("chips-areas-comuns").style.display = "none";
+  document.getElementById("container-busca-lotes").style.display = "flex";
+  atualizarEstadoBotoesAcao();
+}
+
+function reabrirDeslocamento() {
+  if (!deslocamentoConfirmado) return;
+  deslocamentoConfirmado = false;
+
+  const cardDeslocamento = document.getElementById("card-deslocamento");
+  const corpoDeslocamento = document.getElementById("corpo-deslocamento");
+  const resumo = document.getElementById("resumo-deslocamento");
+
+  cardDeslocamento.classList.remove("recolhido");
+  corpoDeslocamento.style.display = "flex";
+  resumo.style.display = "none";
 }
 
 function obterValorCelula(celula) {
@@ -192,8 +378,21 @@ function configurarBotaoPortaria() {
 }
 
 function alternarAreasComuns() {
-  const box = document.getElementById("chips-areas-comuns");
-  box.style.display = box.style.display === "none" ? "flex" : "none";
+  const boxAreas = document.getElementById("chips-areas-comuns");
+  const containerLotes = document.getElementById("container-busca-lotes");
+  const btnToggle = document.getElementById("btn-toggle-areas");
+
+  const vaiAbrir = boxAreas.style.display === "none";
+
+  if (vaiAbrir) {
+    boxAreas.style.display = "grid";
+    containerLotes.style.display = "none";
+    btnToggle.textContent = "Áreas Comuns e Lazer (Clique para fechar)";
+  } else {
+    boxAreas.style.display = "none";
+    containerLotes.style.display = "flex";
+    btnToggle.textContent = "Áreas Comuns e Lazer (Clique para abrir)";
+  }
 }
 
 function renderizarBotoesAreasComuns() {
@@ -227,14 +426,11 @@ function selecionarAreaComum(areaObj) {
   limparVisorRua();
   document.getElementById("sugestoes-unidades").style.display = "none";
   document.getElementById("chips-areas-comuns").style.display = "none";
+  document.getElementById("container-busca-lotes").style.display = "flex";
+  document.getElementById("btn-toggle-areas").textContent =
+    "Áreas Comuns e Lazer (Clique para abrir)";
 
   if (!validarDeslocamento()) return;
-
-  const btnLocalizar = document.getElementById("btn-localizar");
-  if (btnLocalizar) {
-    btnLocalizar.classList.remove("desativado");
-    btnLocalizar.disabled = false;
-  }
 
   processarRotas([areaObj]);
 }
@@ -448,8 +644,10 @@ function desenharPortariaNoMapa() {
 function atualizarMapaPreview(listaDestinos) {
   if (!mapaLeaflet || !camadaMarcadores) return;
 
-  document.getElementById("painel-mapa").style.display = "flex";
-  setTimeout(() => mapaLeaflet.invalidateSize(), 150);
+  if (!ehDispositivoMovel()) {
+    document.getElementById("painel-mapa").style.display = "flex";
+    setTimeout(() => mapaLeaflet.invalidateSize(), 150);
+  }
   desenharPortariaNoMapa();
 
   const pontosTrajeto = [[COORD_PORTARIA.lat, COORD_PORTARIA.lng]];
@@ -606,17 +804,219 @@ function registrarHistorico(lista) {
     modoViagemSelecionado === "walking"
       ? "Sem placa (A pé)"
       : document.getElementById("placa").value.toUpperCase();
+  const nome = document
+    .getElementById("nome-visitante")
+    .value.trim()
+    .toUpperCase();
+
+  const docTipo = modoViagemSelecionado === "walking" ? "ID" : "CNH";
+  const cnh = ehDispositivoMovel()
+    ? "N/A (Celular)"
+    : modoViagemSelecionado === "walking" && !cnhSelecionada
+      ? "N/A"
+      : `${docTipo}: ${cnhSelecionada}`;
 
   fetch(URL_WEBHOOK, {
     method: "POST",
     mode: "no-cors",
     body: JSON.stringify({
-      aparelho: `${tipoAparelho} | ${transporte} (${placa})`,
+      aparelho: tipoAparelho,
+      nome,
+      perfil: perfilSelecionado,
+      cnh,
       transporte,
       placa,
       fila: lista,
     }),
+  }).then(() => {
+    if (!ehDispositivoMovel()) {
+      setTimeout(carregarUltimosAcessos, 2000);
+    }
   });
+}
+
+async function carregarUltimosAcessos() {
+  if (ehDispositivoMovel()) return;
+  const ul = document.getElementById("lista-ultimos-acessos");
+  if (!ul) return;
+
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent("Histórico")}`;
+
+  try {
+    const resp = await fetch(url);
+    const txt = await resp.text();
+    const jsonStr = txt.substring(txt.indexOf("{"), txt.lastIndexOf("}") + 1);
+    const dados = JSON.parse(jsonStr);
+
+    const agora = new Date();
+    const limiteUmaHora = 60 * 60 * 1000;
+    const linhasRecentes = [];
+    historicoAcessosCache = [];
+
+    dados.table.rows.forEach((r) => {
+      if (!r.c || !r.c[0]) return;
+      const strData = obterValorCelula(r.c[0]);
+      const dataReg = parseDataPlanilha(r.c[0], strData);
+
+      const totalCols = r.c.length;
+      let nome = "Visitante";
+      let perfil = "";
+      let cnh = "";
+      let transporte = "";
+      let placa = "";
+      let enderecos = "";
+
+      if (totalCols >= 8) {
+        nome = obterValorCelula(r.c[2]) || "Visitante";
+        perfil = obterValorCelula(r.c[3]);
+        cnh = obterValorCelula(r.c[4]);
+        transporte = obterValorCelula(r.c[5]);
+        placa = obterValorCelula(r.c[6]);
+        enderecos = obterValorCelula(r.c[7]);
+      } else {
+        nome = "Visitante";
+        transporte = obterValorCelula(r.c[2]);
+        placa = obterValorCelula(r.c[3]);
+        enderecos = obterValorCelula(r.c[4]);
+      }
+
+      if (placa && !placa.includes("Sem placa")) {
+        const placaLimpa = placa.replace(/[^A-Z0-9]/g, "");
+        const idx = historicoAcessosCache.findIndex(
+          (item) => item.placa.replace(/[^A-Z0-9]/g, "") === placaLimpa,
+        );
+        if (idx === -1) {
+          historicoAcessosCache.push({ nome, perfil, cnh, placa });
+        }
+      }
+
+      if (
+        dataReg &&
+        agora - dataReg <= limiteUmaHora &&
+        agora - dataReg >= -60000
+      ) {
+        linhasRecentes.push({
+          hora: dataReg.toLocaleTimeString("pt-BR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          nome,
+          perfil,
+          transporte,
+          placa,
+          enderecos,
+        });
+      }
+    });
+
+    linhasRecentes.reverse();
+    ul.innerHTML = "";
+
+    if (linhasRecentes.length === 0) {
+      ul.innerHTML = `<li class="item-vazio">Nenhum acesso registrado na última hora.</li>`;
+      return;
+    }
+
+    linhasRecentes.forEach((item) => {
+      const li = document.createElement("li");
+      li.className = "item-ultimo-acesso";
+      const tagPlaca =
+        item.placa && !item.placa.includes("Sem placa")
+          ? ` (${item.placa})`
+          : "";
+      const tagPerfil = item.perfil ? ` • ${item.perfil}` : "";
+
+      li.innerHTML = `
+        <div class="linha-topo-acesso">
+          <span>${item.nome}${tagPerfil}</span>
+          <span class="hora-acesso">${item.hora}</span>
+        </div>
+        <div class="linha-base-acesso">
+          ${item.transporte}${tagPlaca} ➔ ${item.enderecos}
+        </div>
+      `;
+      li.onclick = () => visualizarAcessoNoMapa(item.enderecos);
+      ul.appendChild(li);
+    });
+  } catch (e) {
+    ul.innerHTML = `<li class="item-vazio">Não foi possível atualizar a lista.</li>`;
+  }
+}
+
+function parseDataPlanilha(celulaObj, strFallback) {
+  if (
+    celulaObj &&
+    typeof celulaObj.v === "string" &&
+    celulaObj.v.startsWith("Date(")
+  ) {
+    const nums = celulaObj.v
+      .replace("Date(", "")
+      .replace(")", "")
+      .split(",")
+      .map(Number);
+    return new Date(
+      nums[0],
+      nums[1],
+      nums[2],
+      nums[3] || 0,
+      nums[4] || 0,
+      nums[5] || 0,
+    );
+  }
+  const match = strFallback.match(
+    /(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?/,
+  );
+  if (match) {
+    return new Date(
+      Number(match[3]),
+      Number(match[2]) - 1,
+      Number(match[1]),
+      Number(match[4]),
+      Number(match[5]),
+      Number(match[6] || 0),
+    );
+  }
+  return null;
+}
+
+function visualizarAcessoNoMapa(strEnderecos) {
+  if (!strEnderecos) return;
+  const partes = strEnderecos.split(" | ");
+  const destinosEncontrados = [];
+
+  partes.forEach((p) => {
+    if (p.startsWith("Área Comum:")) {
+      const nomeA = p.replace("Área Comum:", "").trim().toLowerCase();
+      const areaObj = baseAreasComuns.find(
+        (a) => a.nomeArea.toLowerCase() === nomeA,
+      );
+      if (areaObj) destinosEncontrados.push(areaObj);
+    } else {
+      const mLote = p.match(/Lote\s+(\d+)/i);
+      const mUnid = p.match(/\(Unid\s+([^)]+)\)/i);
+      if (mLote) {
+        const numLote = mLote[1];
+        const unidBusca = mUnid ? mUnid[1].trim() : "-";
+        const lotesCandidatos = baseEnderecos.filter(
+          (e) => String(Number(e.lote)) === String(Number(numLote)),
+        );
+        const exato =
+          lotesCandidatos.find(
+            (e) => String(e.unidade).toLowerCase() === unidBusca.toLowerCase(),
+          ) || lotesCandidatos[0];
+        if (exato) {
+          destinosEncontrados.push({
+            ...exato,
+            unidade: mUnid ? unidBusca : "Portão do Lote",
+          });
+        }
+      }
+    }
+  });
+
+  if (destinosEncontrados.length > 0) {
+    atualizarMapaPreview(destinosEncontrados);
+  }
 }
 
 function processarRotas(listaForcada = null) {
@@ -716,7 +1116,7 @@ function processarRotas(listaForcada = null) {
   blocoDiv.innerHTML = `
     <p class="titulo-destino-qr">${tituloBloco}</p>
     <div id="${qrId}" class="qrcode-box"></div>
-    <p class="dica-qr">Aponte a câmara do telemóvel para abrir a rota</p>
+    <p class="dica-qr">Aponte a câmera do celular para abrir a rota</p>
     <a href="${urlBotao}" target="_blank" class="btn-maps" onclick="limparSelecaoCompleta()">${textoBotao}</a>
   `;
 
@@ -736,15 +1136,32 @@ function processarRotas(listaForcada = null) {
 }
 
 function limparSelecaoCompleta() {
-  const inputPlaca = document.getElementById("placa");
-  if (inputPlaca) inputPlaca.value = "";
+  const ehCelular = ehDispositivoMovel();
+
+  if (!ehCelular) {
+    document.getElementById("placa").value = "";
+    document.getElementById("nome-visitante").value = "";
+    perfilSelecionado = "";
+    cnhSelecionada = "";
+    document
+      .querySelectorAll(".btn-chip-acesso")
+      .forEach((b) => b.classList.remove("ativo"));
+  }
 
   modoViagemSelecionado = "";
+  deslocamentoConfirmado = false;
   document
     .querySelectorAll(".btn-modo")
     .forEach((btn) => btn.classList.remove("ativo"));
-  document.getElementById("box-placa").style.display = "none";
 
+  document.getElementById("card-deslocamento").classList.remove("recolhido");
+  document.getElementById("corpo-deslocamento").style.display = "flex";
+  document.getElementById("dados-acesso-extra").style.display = "none";
+  document.getElementById("resumo-deslocamento").style.display = "none";
+  const tagObrig = document.getElementById("tag-obrigatorio");
+  if (tagObrig) tagObrig.style.display = "inline";
+
+  document.getElementById("sessao-busca").style.display = "none";
   document.getElementById("resultado").style.display = "none";
   document.getElementById("lote").value = "";
   document.getElementById("unidade").value = "";
@@ -755,7 +1172,6 @@ function limparSelecaoCompleta() {
   if (btnLimparPc) btnLimparPc.style.display = "none";
 
   atualizarEstadoBotoesAcao();
-  document.getElementById("lote").focus();
 }
 
 function mostrarErro(msg) {
