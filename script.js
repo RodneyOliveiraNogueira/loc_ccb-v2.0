@@ -1,7 +1,6 @@
 const SHEET_ID = "1QDUCLr8tZzTbxc1dwSf0Pl-0U7MjGyu7IzCgq95za1o";
 const NOME_ABA = "Cadastro";
-const URL_WEBHOOK =
-  "https://script.google.com/macros/s/AKfycbwwYNic6HrlhNeps58h2MERfJZ-DOcfXm2wbfPWRoAP1wKvWsrYVCbqf_kcuduSjzNw/exec";
+const URL_WEBHOOK = "https://script.google.com/macros/s/AKfycbwwYNic6HrlhNeps58h2MERfJZ-DOcfXm2wbfPWRoAP1wKvWsrYVCbqf_kcuduSjzNw/exec";
 
 let COORD_PORTARIA = { lat: -22.816945097334372, lng: -42.088560977464915 };
 
@@ -44,33 +43,27 @@ function configurarVisibilidadeDispositivo() {
   const btnContatoFora = document.querySelector(".btn-contato-portaria-fora");
   const painelUltimos = document.getElementById("painel-ultimos-acessos");
 
-  if (btnPortaria) btnPortaria.style.display = ehCelular ? "block" : "none";
-  if (btnContatoFora)
-    btnContatoFora.style.display = ehCelular ? "flex" : "none";
+  if (btnPortaria) btnPortaria.style.display = ehCelular ? "flex" : "none";
+  if (btnContatoFora) btnContatoFora.style.display = ehCelular ? "flex" : "none";
   if (painelUltimos) painelUltimos.style.display = ehCelular ? "none" : "block";
-
-  // Nota: A exibição do box-cnh-pc no PC agora é controlada diretamente ao clicar em Carro, Moto ou A pé na função selecionarModo().
 }
 
 function selecionarModo(modo) {
   esconderErro();
   modoViagemSelecionado = modo;
 
-  document
-    .querySelectorAll(".btn-modo")
-    .forEach((btn) => btn.classList.remove("ativo"));
+  document.querySelectorAll(".btn-modo").forEach((btn) => btn.classList.remove("ativo"));
   const btnAtivo = document.getElementById(`modo-${modo}`);
   if (btnAtivo) btnAtivo.classList.add("ativo");
 
   const dadosExtra = document.getElementById("dados-acesso-extra");
   const boxPlaca = document.getElementById("box-placa");
   const inputPlaca = document.getElementById("placa");
-  const boxCnhPc = document.getElementById("box-cnh-pc"); // Bloco do documento
+  const boxCnhPc = document.getElementById("box-cnh-pc");
   const labelDoc = document.getElementById("label-documento");
 
   dadosExtra.style.display = "flex";
 
-  // Se for no PC, exibe o bloco de documento para qualquer modo (Carro, Moto ou A pé)
   if (!ehDispositivoMovel() && boxCnhPc) {
     boxCnhPc.style.display = "flex";
   }
@@ -82,7 +75,7 @@ function selecionarModo(modo) {
   } else {
     boxPlaca.style.display = "none";
     if (inputPlaca) inputPlaca.value = "";
-    if (labelDoc) labelDoc.textContent = "PORTA ID?"; // Exibe Porta ID quando for a pé
+    if (labelDoc) labelDoc.textContent = "PORTA ID?";
   }
 
   configurarBotaoPortaria();
@@ -93,11 +86,7 @@ function selecionarModo(modo) {
     const perfilSalvo = localStorage.getItem("loc_ccb_perfil") || "";
 
     const exigePlaca = modo === "driving" || modo === "two-wheeler";
-    const placaValida =
-      !exigePlaca ||
-      /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/.test(
-        placaSalva.replace(/[^A-Z0-9]/g, ""),
-      );
+    const placaValida = !exigePlaca || /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/.test(placaSalva.replace(/[^A-Z0-9]/g, ""));
 
     if (placaValida && nomeSalvo && perfilSalvo) {
       if (exigePlaca && inputPlaca) inputPlaca.value = placaSalva;
@@ -111,9 +100,7 @@ function selecionarModo(modo) {
 function selecionarPerfil(perfil) {
   esconderErro();
   perfilSelecionado = perfil;
-  document
-    .querySelectorAll("#dados-acesso-extra .btn-chip-acesso[id^='perfil-']")
-    .forEach((b) => b.classList.remove("ativo"));
+  document.querySelectorAll("#dados-acesso-extra .btn-chip-acesso[id^='perfil-']").forEach((b) => b.classList.remove("ativo"));
   const btn = document.getElementById(`perfil-${perfil}`);
   if (btn) btn.classList.add("ativo");
 }
@@ -121,9 +108,7 @@ function selecionarPerfil(perfil) {
 function selecionarCNH(op) {
   esconderErro();
   cnhSelecionada = op;
-  document
-    .querySelectorAll("#box-cnh-pc .btn-chip-acesso")
-    .forEach((b) => b.classList.remove("ativo"));
+  document.querySelectorAll("#box-cnh-pc .btn-chip-acesso").forEach((b) => b.classList.remove("ativo"));
   const btn = document.getElementById(`cnh-${op}`);
   if (btn) btn.classList.add("ativo");
 }
@@ -137,7 +122,7 @@ function formatarPlaca() {
   if (placaDigitada.length >= 7 && historicoAcessosCache.length > 0) {
     const placaLimpaBusca = placaDigitada.replace(/[^A-Z0-9]/g, "");
     const registroRecorrente = historicoAcessosCache.find(
-      (item) => item.placa.replace(/[^A-Z0-9]/g, "") === placaLimpaBusca,
+      (item) => item.placa.replace(/[^A-Z0-9]/g, "") === placaLimpaBusca
     );
 
     if (registroRecorrente) {
@@ -146,11 +131,7 @@ function formatarPlaca() {
         selecionarPerfil(registroRecorrente.perfil);
       }
       if (!ehDispositivoMovel() && registroRecorrente.cnh) {
-        const cnhNormalizada = registroRecorrente.cnh
-          .toLowerCase()
-          .includes("sim")
-          ? "Sim"
-          : "Não";
+        const cnhNormalizada = registroRecorrente.cnh.toLowerCase().includes("sim") ? "Sim" : "Não";
         selecionarCNH(cnhNormalizada);
       }
     }
@@ -167,8 +148,7 @@ function carregarDadosSalvosCelular() {
   const ultimoNome = localStorage.getItem("loc_ccb_nome");
   const ultimoPerfil = localStorage.getItem("loc_ccb_perfil");
 
-  if (ultimaPlaca && inputPlaca && !inputPlaca.value)
-    inputPlaca.value = ultimaPlaca;
+  if (ultimaPlaca && inputPlaca && !inputPlaca.value) inputPlaca.value = ultimaPlaca;
   if (ultimoNome && inputNome && !inputNome.value) inputNome.value = ultimoNome;
   if (ultimoPerfil && !perfilSelecionado) selecionarPerfil(ultimoPerfil);
 }
@@ -179,10 +159,7 @@ function validarDeslocamento() {
     return false;
   }
 
-  if (
-    modoViagemSelecionado === "driving" ||
-    modoViagemSelecionado === "two-wheeler"
-  ) {
+  if (modoViagemSelecionado === "driving" || modoViagemSelecionado === "two-wheeler") {
     const inputPlaca = document.getElementById("placa");
     const placaLimpa = inputPlaca.value.replace(/[^A-Z0-9]/g, "");
     const regexPlacaValida = /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/;
@@ -206,16 +183,13 @@ function validarDeslocamento() {
   }
 
   if (!perfilSelecionado) {
-    mostrarErro("Selecione o Perfil (Visitante, Entregador ou Prestador).");
+    mostrarErro("Selecione o Perfil de Acesso.");
     return false;
   }
 
-  if (
-    !ehDispositivoMovel() &&
-    !cnhSelecionada &&
-    modoViagemSelecionado !== "walking"
-  ) {
-    mostrarErro("Informe se o condutor porta CNH (Sim ou Não).");
+  if (!ehDispositivoMovel() && !cnhSelecionada) {
+    const docNome = modoViagemSelecionado === "walking" ? "ID" : "CNH";
+    mostrarErro(`Informe se o visitante porta ${docNome} (Sim ou Não).`);
     return false;
   }
 
@@ -233,21 +207,10 @@ function confirmarDeslocamento() {
 
   deslocamentoConfirmado = true;
 
-  const nomesModo = {
-    driving: "Carro",
-    "two-wheeler": "Moto",
-    walking: "A pé",
-  };
+  const nomesModo = { driving: "Carro", "two-wheeler": "Moto", walking: "A pé" };
   const nomeModo = nomesModo[modoViagemSelecionado] || modoViagemSelecionado;
-  const placaTxt =
-    modoViagemSelecionado === "walking"
-      ? ""
-      : ` (${document.getElementById("placa").value.toUpperCase()})`;
-  const nomeVisitante = document
-    .getElementById("nome-visitante")
-    .value.trim()
-    .toUpperCase()
-    .split(" ")[0];
+  const placaTxt = modoViagemSelecionado === "walking" ? "" : ` (${document.getElementById("placa").value.toUpperCase()})`;
+  const nomeVisitante = document.getElementById("nome-visitante").value.trim().toUpperCase().split(" ")[0];
 
   const cardDeslocamento = document.getElementById("card-deslocamento");
   const corpoDeslocamento = document.getElementById("corpo-deslocamento");
@@ -283,10 +246,8 @@ function reabrirDeslocamento() {
 
 function obterValorCelula(celula) {
   if (!celula) return "";
-  if (celula.v !== null && celula.v !== undefined)
-    return String(celula.v).trim();
-  if (celula.f !== null && celula.f !== undefined)
-    return String(celula.f).trim();
+  if (celula.v !== null && celula.v !== undefined) return String(celula.v).trim();
+  if (celula.f !== null && celula.f !== undefined) return String(celula.f).trim();
   return "";
 }
 
@@ -296,10 +257,7 @@ async function carregarPlanilha() {
   try {
     const resposta = await fetch(url);
     const texto = await resposta.text();
-    const jsonString = texto.substring(
-      texto.indexOf("{"),
-      texto.lastIndexOf("}") + 1,
-    );
+    const jsonString = texto.substring(texto.indexOf("{"), texto.lastIndexOf("}") + 1);
     const dados = JSON.parse(jsonString);
 
     baseEnderecos = dados.table.rows
@@ -320,12 +278,7 @@ async function carregarPlanilha() {
           ehAreaComum: false,
         };
       })
-      .filter(
-        (item) =>
-          item.lote !== "" &&
-          item.lote.toUpperCase() !== "LOTE" &&
-          item.coordenada !== "",
-      );
+      .filter((item) => item.lote !== "" && item.lote.toUpperCase() !== "LOTE" && item.coordenada !== "");
 
     baseAreasComuns = dados.table.rows
       .map((linha) => {
@@ -336,8 +289,7 @@ async function carregarPlanilha() {
         const ladoArea = obterValorCelula(linha.c[9]);
         const coordenadaArea = obterValorCelula(linha.c[10]);
 
-        if (!tipoArea || (tipoArea.toUpperCase() === "ÁREA COMUM" && !nomeArea))
-          return null;
+        if (!tipoArea || (tipoArea.toUpperCase() === "ÁREA COMUM" && !nomeArea)) return null;
 
         return {
           lote: "0",
@@ -349,14 +301,9 @@ async function carregarPlanilha() {
           ehAreaComum: true,
         };
       })
-      .filter(
-        (item) =>
-          item !== null && item.nomeArea !== "" && item.coordenada !== "",
-      );
+      .filter((item) => item !== null && item.nomeArea !== "" && item.coordenada !== "");
 
-    const itemPortaria = baseAreasComuns.find((item) =>
-      item.nomeArea.toLowerCase().includes("portaria"),
-    );
+    const itemPortaria = baseAreasComuns.find((item) => item.nomeArea.toLowerCase().includes("portaria"));
     if (itemPortaria) {
       const coordP = extrairLatLng(itemPortaria.coordenada);
       if (coordP) COORD_PORTARIA = coordP;
@@ -427,8 +374,7 @@ function selecionarAreaComum(areaObj) {
   document.getElementById("sugestoes-unidades").style.display = "none";
   document.getElementById("chips-areas-comuns").style.display = "none";
   document.getElementById("container-busca-lotes").style.display = "flex";
-  document.getElementById("btn-toggle-areas").textContent =
-    "Áreas Comuns e Lazer (Clique para abrir)";
+  document.getElementById("btn-toggle-areas").textContent = "Áreas Comuns e Lazer (Clique para abrir)";
 
   if (!validarDeslocamento()) return;
 
@@ -480,7 +426,7 @@ function aoDigitarLote() {
   }
 
   const registrosDoLote = baseEnderecos.filter(
-    (item) => String(Number(item.lote)) === String(Number(loteDigitado)),
+    (item) => String(Number(item.lote)) === String(Number(loteDigitado))
   );
 
   if (registrosDoLote.length === 0) {
@@ -489,14 +435,10 @@ function aoDigitarLote() {
     return;
   }
 
-  const registroBase =
-    registrosDoLote.find((r) => r.unidade === "-" || r.unidade === "") ||
-    registrosDoLote[0];
+  const registroBase = registrosDoLote.find((r) => r.unidade === "-" || r.unidade === "") || registrosDoLote[0];
   atualizarVisorRua(registroBase);
 
-  const unidadesEspecificas = registrosDoLote.filter(
-    (r) => r.unidade !== "-" && r.unidade !== "",
-  );
+  const unidadesEspecificas = registrosDoLote.filter((r) => r.unidade !== "-" && r.unidade !== "");
 
   containerChips.innerHTML = "";
   if (unidadesEspecificas.length > 0) {
@@ -520,11 +462,8 @@ function aoDigitarLote() {
 
 function atualizarVisorRua(item) {
   const statusRua = document.getElementById("status-rua");
-  document.getElementById("txt-rua").textContent =
-    item.rua > 0 ? `Rua ${item.rua}` : `Lote ${item.lote}`;
-  document.getElementById("txt-lado").textContent = item.lado.startsWith("Lado")
-    ? item.lado
-    : `Lado ${item.lado}`;
+  document.getElementById("txt-rua").textContent = item.rua > 0 ? `Rua ${item.rua}` : `Lote ${item.lote}`;
+  document.getElementById("txt-lado").textContent = item.lado.startsWith("Lado") ? item.lado : `Lado ${item.lado}`;
   statusRua.className = "rua-display valido";
 }
 
@@ -553,7 +492,7 @@ function validarEmTempoReal() {
   }
 
   const lotesEncontrados = baseEnderecos.filter(
-    (item) => String(Number(item.lote)) === String(Number(lote)),
+    (item) => String(Number(item.lote)) === String(Number(lote))
   );
 
   if (lotesEncontrados.length === 0) {
@@ -562,10 +501,7 @@ function validarEmTempoReal() {
   }
 
   if (!unidade || unidade === "-") {
-    const linhaMestraLote =
-      lotesEncontrados.find(
-        (item) => item.unidade === "-" || item.unidade === "",
-      ) || lotesEncontrados[0];
+    const linhaMestraLote = lotesEncontrados.find((item) => item.unidade === "-" || item.unidade === "") || lotesEncontrados[0];
     atualizarVisorRua(linhaMestraLote);
     return { ...linhaMestraLote, unidade: "Portão do Lote" };
   }
@@ -573,19 +509,13 @@ function validarEmTempoReal() {
   const unidExata = lotesEncontrados.find(
     (item) =>
       item.unidade !== "-" &&
-      (item.unidade.toLowerCase() === unidade.toLowerCase() ||
-        String(Number(item.unidade)) === String(Number(unidade))),
+      (item.unidade.toLowerCase() === unidade.toLowerCase() || String(Number(item.unidade)) === String(Number(unidade)))
   );
 
   if (unidExata) {
     atualizarVisorRua(unidExata);
-    if (
-      unidExata.lado.toLowerCase().includes("terreno") ||
-      unidExata.lado.toLowerCase().includes("vazio")
-    ) {
-      mostrarErro(
-        `Atenção: A Unid. ${unidExata.unidade} consta como "${unidExata.lado}".`,
-      );
+    if (unidExata.lado.toLowerCase().includes("terreno") || unidExata.lado.toLowerCase().includes("vazio")) {
+      mostrarErro(`Atenção: A Unid. ${unidExata.unidade} consta como "${unidExata.lado}".`);
     }
     return unidExata;
   } else {
@@ -602,11 +532,7 @@ function formatarDestinoMaps(coordenadaBruta) {
 function extrairLatLng(coordenadaBruta) {
   if (!coordenadaBruta) return null;
   const partes = coordenadaBruta.trim().split(",");
-  if (
-    partes.length === 2 &&
-    !isNaN(parseFloat(partes[0])) &&
-    !isNaN(parseFloat(partes[1]))
-  ) {
+  if (partes.length === 2 && !isNaN(parseFloat(partes[0])) && !isNaN(parseFloat(partes[1]))) {
     return { lat: parseFloat(partes[0]), lng: parseFloat(partes[1]) };
   }
   return null;
@@ -615,37 +541,28 @@ function extrairLatLng(coordenadaBruta) {
 function inicializarMapaPC() {
   const divMapa = document.getElementById("mapa-interativo");
   if (!divMapa) return;
-  mapaLeaflet = L.map("mapa-interativo").setView(
-    [COORD_PORTARIA.lat, COORD_PORTARIA.lng],
-    17,
-  );
+  mapaLeaflet = L.map("mapa-interativo").setView([COORD_PORTARIA.lat, COORD_PORTARIA.lng], 17);
   L.tileLayer("https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}", {
     maxZoom: 20,
     subdomains: ["mt0", "mt1", "mt2", "mt3"],
   }).addTo(mapaLeaflet);
   camadaMarcadores = L.layerGroup().addTo(mapaLeaflet);
   desenharPortariaNoMapa();
+  setTimeout(() => mapaLeaflet.invalidateSize(), 200);
 }
 
 function desenharPortariaNoMapa() {
   if (!camadaMarcadores) return;
   camadaMarcadores.clearLayers();
   L.circleMarker([COORD_PORTARIA.lat, COORD_PORTARIA.lng], {
-    radius: 8,
-    fillColor: "#0ea5e9",
-    color: "#ffffff",
-    weight: 2,
-    fillOpacity: 1,
-  })
-    .bindPopup("<b>Portaria Cisne Branco</b>")
-    .addTo(camadaMarcadores);
+    radius: 8, fillColor: "#0ea5e9", color: "#ffffff", weight: 2, fillOpacity: 1,
+  }).bindPopup("<b>Portaria Cisne Branco</b>").addTo(camadaMarcadores);
 }
 
 function atualizarMapaPreview(listaDestinos) {
   if (!mapaLeaflet || !camadaMarcadores) return;
 
   if (!ehDispositivoMovel()) {
-    document.getElementById("painel-mapa").style.display = "flex";
     setTimeout(() => mapaLeaflet.invalidateSize(), 150);
   }
   desenharPortariaNoMapa();
@@ -660,68 +577,39 @@ function atualizarMapaPreview(listaDestinos) {
         ? `<b>${item.nomeArea}</b>`
         : `<b>${idx + 1}º Destino:</b> Lote ${item.lote} (${item.unidade})<br>Rua ${item.rua} | Lado ${item.lado}`;
       L.circleMarker([coord.lat, coord.lng], {
-        radius: 9,
-        fillColor: "#ef4444",
-        color: "#ffffff",
-        weight: 2,
-        fillOpacity: 1,
-      })
-        .bindPopup(tituloPopup)
-        .addTo(camadaMarcadores)
-        .openPopup();
+        radius: 9, fillColor: "#ef4444", color: "#ffffff", weight: 2, fillOpacity: 1,
+      }).bindPopup(tituloPopup).addTo(camadaMarcadores).openPopup();
     }
   });
 
   if (pontosTrajeto.length > 1) {
-    const linhaRota = L.polyline(pontosTrajeto, {
-      color: "#38bdf8",
-      weight: 4,
-      dashArray: "8, 6",
-    }).addTo(camadaMarcadores);
-    mapaLeaflet.fitBounds(linhaRota.getBounds(), {
-      padding: [50, 50],
-      maxZoom: 18,
-    });
+    const linhaRota = L.polyline(pontosTrajeto, { color: "#38bdf8", weight: 4, dashArray: "8, 6" }).addTo(camadaMarcadores);
+    mapaLeaflet.fitBounds(linhaRota.getBounds(), { padding: [50, 50], maxZoom: 18 });
   }
 
   const infoBadge = document.getElementById("badge-mapa-info");
   if (listaDestinos.length === 1) {
     const d = listaDestinos[0];
-    infoBadge.textContent = d.ehAreaComum
-      ? d.nomeArea
-      : `Lote ${d.lote} | Lado ${d.lado}`;
+    infoBadge.textContent = d.ehAreaComum ? d.nomeArea : `Lote ${d.lote} | Lado ${d.lado}`;
   } else {
     infoBadge.textContent = `${listaDestinos.length} paradas na rota`;
   }
 }
 
-function salvarFilaLocal() {
-  localStorage.setItem("loc_ccb_fila", JSON.stringify(filaEntregas));
-}
+function salvarFilaLocal() { localStorage.setItem("loc_ccb_fila", JSON.stringify(filaEntregas)); }
 
 function carregarFilaLocal() {
   const salva = localStorage.getItem("loc_ccb_fila");
-  if (salva) {
-    filaEntregas = JSON.parse(salva);
-    atualizarInterfaceFila();
-  }
+  if (salva) { filaEntregas = JSON.parse(salva); atualizarInterfaceFila(); }
 }
 
 function adicionarNaFila() {
   if (!validarDeslocamento()) return;
   const casa = validarEmTempoReal();
-  if (!casa) {
-    mostrarErro("Digite um Lote válido antes de adicionar à fila.");
-    return;
-  }
+  if (!casa) { mostrarErro("Digite um Lote válido antes de adicionar à fila."); return; }
 
-  const jaExiste = filaEntregas.some(
-    (item) => item.lote === casa.lote && item.unidade === casa.unidade,
-  );
-  if (jaExiste) {
-    mostrarErro("Este endereço já está na lista.");
-    return;
-  }
+  const jaExiste = filaEntregas.some((item) => item.lote === casa.lote && item.unidade === casa.unidade);
+  if (jaExiste) { mostrarErro("Este endereço já está na lista."); return; }
 
   filaEntregas.push(casa);
   salvarFilaLocal();
@@ -764,10 +652,7 @@ function atualizarInterfaceFila() {
     btnLocalizar.textContent = "Localizar Endereço";
   } else {
     container.style.display = "block";
-    btnLocalizar.textContent =
-      filaEntregas.length === 1
-        ? "Gerar Rota (1 Endereço)"
-        : `Finalizar e Gerar Rotas (${filaEntregas.length} Endereços)`;
+    btnLocalizar.textContent = filaEntregas.length === 1 ? "Gerar Rota (1 Endereço)" : `Finalizar e Gerar Rotas (${filaEntregas.length} Endereços)`;
   }
 
   atualizarEstadoBotoesAcao();
@@ -794,27 +679,13 @@ function registrarHistorico(lista) {
   else if (/iphone|ipad|ipod/i.test(ua)) tipoAparelho = "Celular (iPhone)";
   else if (/mobile/i.test(ua)) tipoAparelho = "Celular (Outros)";
 
-  const nomesModo = {
-    driving: "Carro",
-    "two-wheeler": "Moto",
-    walking: "A pé",
-  };
+  const nomesModo = { driving: "Carro", "two-wheeler": "Moto", walking: "A pé" };
   const transporte = nomesModo[modoViagemSelecionado] || modoViagemSelecionado;
-  const placa =
-    modoViagemSelecionado === "walking"
-      ? "Sem placa (A pé)"
-      : document.getElementById("placa").value.toUpperCase();
-  const nome = document
-    .getElementById("nome-visitante")
-    .value.trim()
-    .toUpperCase();
+  const placa = modoViagemSelecionado === "walking" ? "Sem placa (A pé)" : document.getElementById("placa").value.toUpperCase();
+  const nome = document.getElementById("nome-visitante").value.trim().toUpperCase();
 
   const docTipo = modoViagemSelecionado === "walking" ? "ID" : "CNH";
-  const cnh = ehDispositivoMovel()
-    ? "N/A (Celular)"
-    : modoViagemSelecionado === "walking" && !cnhSelecionada
-      ? "N/A"
-      : `${docTipo}: ${cnhSelecionada}`;
+  const cnh = ehDispositivoMovel() ? "N/A (Celular)" : (modoViagemSelecionado === "walking" && !cnhSelecionada ? "N/A" : `${docTipo}: ${cnhSelecionada}`);
 
   fetch(URL_WEBHOOK, {
     method: "POST",
@@ -838,6 +709,7 @@ function registrarHistorico(lista) {
 async function carregarUltimosAcessos() {
   if (ehDispositivoMovel()) return;
   const ul = document.getElementById("lista-ultimos-acessos");
+  const spanContador = document.getElementById("contador-acessos-dia");
   if (!ul) return;
 
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent("Histórico")}`;
@@ -848,9 +720,8 @@ async function carregarUltimosAcessos() {
     const jsonStr = txt.substring(txt.indexOf("{"), txt.lastIndexOf("}") + 1);
     const dados = JSON.parse(jsonStr);
 
-    const agora = new Date();
-    const limiteUmaHora = 60 * 60 * 1000;
-    const linhasRecentes = [];
+    const hoje = new Date();
+    const linhasDoDia = [];
     historicoAcessosCache = [];
 
     dados.table.rows.forEach((r) => {
@@ -882,24 +753,17 @@ async function carregarUltimosAcessos() {
 
       if (placa && !placa.includes("Sem placa")) {
         const placaLimpa = placa.replace(/[^A-Z0-9]/g, "");
-        const idx = historicoAcessosCache.findIndex(
-          (item) => item.placa.replace(/[^A-Z0-9]/g, "") === placaLimpa,
-        );
-        if (idx === -1) {
+        const idx = historicoAcessosCache.findIndex((item) => item.placa.replace(/[^A-Z0-9]/g, "") === placaLimpa);
+        if (idx !== -1) {
+          historicoAcessosCache[idx] = { nome, perfil, cnh, placa };
+        } else {
           historicoAcessosCache.push({ nome, perfil, cnh, placa });
         }
       }
 
-      if (
-        dataReg &&
-        agora - dataReg <= limiteUmaHora &&
-        agora - dataReg >= -60000
-      ) {
-        linhasRecentes.push({
-          hora: dataReg.toLocaleTimeString("pt-BR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+      if (dataReg && dataReg.toDateString() === hoje.toDateString()) {
+        linhasDoDia.push({
+          hora: dataReg.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
           nome,
           perfil,
           transporte,
@@ -909,21 +773,19 @@ async function carregarUltimosAcessos() {
       }
     });
 
-    linhasRecentes.reverse();
+    linhasDoDia.reverse();
     ul.innerHTML = "";
+    if (spanContador) spanContador.textContent = linhasDoDia.length;
 
-    if (linhasRecentes.length === 0) {
-      ul.innerHTML = `<li class="item-vazio">Nenhum acesso registrado na última hora.</li>`;
+    if (linhasDoDia.length === 0) {
+      ul.innerHTML = `<li class="item-vazio">Nenhum acesso registrado hoje.</li>`;
       return;
     }
 
-    linhasRecentes.forEach((item) => {
+    linhasDoDia.forEach((item) => {
       const li = document.createElement("li");
       li.className = "item-ultimo-acesso";
-      const tagPlaca =
-        item.placa && !item.placa.includes("Sem placa")
-          ? ` (${item.placa})`
-          : "";
+      const tagPlaca = item.placa && !item.placa.includes("Sem placa") ? ` (${item.placa})` : "";
       const tagPerfil = item.perfil ? ` • ${item.perfil}` : "";
 
       li.innerHTML = `
@@ -944,37 +806,13 @@ async function carregarUltimosAcessos() {
 }
 
 function parseDataPlanilha(celulaObj, strFallback) {
-  if (
-    celulaObj &&
-    typeof celulaObj.v === "string" &&
-    celulaObj.v.startsWith("Date(")
-  ) {
-    const nums = celulaObj.v
-      .replace("Date(", "")
-      .replace(")", "")
-      .split(",")
-      .map(Number);
-    return new Date(
-      nums[0],
-      nums[1],
-      nums[2],
-      nums[3] || 0,
-      nums[4] || 0,
-      nums[5] || 0,
-    );
+  if (celulaObj && typeof celulaObj.v === "string" && celulaObj.v.startsWith("Date(")) {
+    const nums = celulaObj.v.replace("Date(", "").replace(")", "").split(",").map(Number);
+    return new Date(nums[0], nums[1], nums[2], nums[3] || 0, nums[4] || 0, nums[5] || 0);
   }
-  const match = strFallback.match(
-    /(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?/,
-  );
+  const match = strFallback.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?/);
   if (match) {
-    return new Date(
-      Number(match[3]),
-      Number(match[2]) - 1,
-      Number(match[1]),
-      Number(match[4]),
-      Number(match[5]),
-      Number(match[6] || 0),
-    );
+    return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), Number(match[4]), Number(match[5]), Number(match[6] || 0));
   }
   return null;
 }
@@ -987,9 +825,7 @@ function visualizarAcessoNoMapa(strEnderecos) {
   partes.forEach((p) => {
     if (p.startsWith("Área Comum:")) {
       const nomeA = p.replace("Área Comum:", "").trim().toLowerCase();
-      const areaObj = baseAreasComuns.find(
-        (a) => a.nomeArea.toLowerCase() === nomeA,
-      );
+      const areaObj = baseAreasComuns.find((a) => a.nomeArea.toLowerCase() === nomeA);
       if (areaObj) destinosEncontrados.push(areaObj);
     } else {
       const mLote = p.match(/Lote\s+(\d+)/i);
@@ -997,18 +833,10 @@ function visualizarAcessoNoMapa(strEnderecos) {
       if (mLote) {
         const numLote = mLote[1];
         const unidBusca = mUnid ? mUnid[1].trim() : "-";
-        const lotesCandidatos = baseEnderecos.filter(
-          (e) => String(Number(e.lote)) === String(Number(numLote)),
-        );
-        const exato =
-          lotesCandidatos.find(
-            (e) => String(e.unidade).toLowerCase() === unidBusca.toLowerCase(),
-          ) || lotesCandidatos[0];
+        const lotesCandidatos = baseEnderecos.filter((e) => String(Number(e.lote)) === String(Number(numLote)));
+        const exato = lotesCandidatos.find((e) => String(e.unidade).toLowerCase() === unidBusca.toLowerCase()) || lotesCandidatos[0];
         if (exato) {
-          destinosEncontrados.push({
-            ...exato,
-            unidade: mUnid ? unidBusca : "Portão do Lote",
-          });
+          destinosEncontrados.push({ ...exato, unidade: mUnid ? unidBusca : "Portão do Lote" });
         }
       }
     }
@@ -1028,10 +856,7 @@ function processarRotas(listaForcada = null) {
   if (!listaForcada) {
     const casaAtual = validarEmTempoReal();
     if (casaAtual) {
-      const jaExiste = listaFinal.some(
-        (item) =>
-          item.lote === casaAtual.lote && item.unidade === casaAtual.unidade,
-      );
+      const jaExiste = listaFinal.some((item) => item.lote === casaAtual.lote && item.unidade === casaAtual.unidade);
       if (!jaExiste) listaFinal.push(casaAtual);
     }
   }
@@ -1054,9 +879,7 @@ function processarRotas(listaForcada = null) {
 
   const ehCelular = ehDispositivoMovel();
   const sufixoQr = `&travelmode=${modoViagemSelecionado}&dir_action=navigate`;
-  const sufixoBotao = ehCelular
-    ? `&travelmode=${modoViagemSelecionado}&dir_action=navigate`
-    : `&travelmode=${modoViagemSelecionado}`;
+  const sufixoBotao = ehCelular ? `&travelmode=${modoViagemSelecionado}&dir_action=navigate` : `&travelmode=${modoViagemSelecionado}`;
 
   const divResultado = document.getElementById("resultado");
   const containerResultados = document.getElementById("lista-resultados-qr");
@@ -1069,9 +892,7 @@ function processarRotas(listaForcada = null) {
   }
 
   const bloco = listaFinal;
-  const ultimoPonto = encodeURIComponent(
-    formatarDestinoMaps(bloco[bloco.length - 1].coordenada),
-  );
+  const ultimoPonto = encodeURIComponent(formatarDestinoMaps(bloco[bloco.length - 1].coordenada));
 
   let urlQrCode = "";
   let urlBotao = "";
@@ -1080,10 +901,7 @@ function processarRotas(listaForcada = null) {
     urlQrCode = `https://www.google.com/maps/dir/?api=1&destination=${ultimoPonto}${sufixoQr}`;
     urlBotao = `https://www.google.com/maps/dir/?api=1&destination=${ultimoPonto}${sufixoBotao}`;
   } else {
-    const paradas = bloco
-      .slice(0, -1)
-      .map((item) => encodeURIComponent(formatarDestinoMaps(item.coordenada)))
-      .join("|");
+    const paradas = bloco.slice(0, -1).map((item) => encodeURIComponent(formatarDestinoMaps(item.coordenada))).join("|");
     urlQrCode = `https://www.google.com/maps/dir/?api=1&waypoints=${paradas}&destination=${ultimoPonto}${sufixoQr}`;
     urlBotao = `https://www.google.com/maps/dir/?api=1&waypoints=${paradas}&destination=${ultimoPonto}${sufixoBotao}`;
   }
@@ -1100,18 +918,13 @@ function processarRotas(listaForcada = null) {
   let tituloBloco = "";
   if (listaFinal.length === 1) {
     const itemUnico = bloco[0];
-    tituloBloco = itemUnico.ehAreaComum
-      ? `Destino: ${itemUnico.nomeArea}`
-      : `Destino: Lote ${itemUnico.lote} (${itemUnico.unidade})`;
+    tituloBloco = itemUnico.ehAreaComum ? `Destino: ${itemUnico.nomeArea}` : `Destino: Lote ${itemUnico.lote} (${itemUnico.unidade})`;
   } else {
     tituloBloco = `Rota Otimizada (${bloco.length} Entregas)`;
   }
 
   const qrId = `qrcode-bloco-1`;
-  const textoBotao =
-    listaFinal.length === 1
-      ? "Abrir direto no Google Maps"
-      : `Abrir Rota no Google Maps (${bloco.length} paradas)`;
+  const textoBotao = listaFinal.length === 1 ? "Abrir direto no Google Maps" : `Abrir Rota no Google Maps (${bloco.length} paradas)`;
 
   blocoDiv.innerHTML = `
     <p class="titulo-destino-qr">${tituloBloco}</p>
@@ -1121,12 +934,7 @@ function processarRotas(listaForcada = null) {
   `;
 
   containerResultados.appendChild(blocoDiv);
-  new QRCode(document.getElementById(qrId), {
-    text: urlQrCode,
-    width: 175,
-    height: 175,
-    correctLevel: QRCode.CorrectLevel.L,
-  });
+  new QRCode(document.getElementById(qrId), { text: urlQrCode, width: 175, height: 175, correctLevel: QRCode.CorrectLevel.L });
 
   if (!listaForcada) {
     filaEntregas = [];
@@ -1143,16 +951,12 @@ function limparSelecaoCompleta() {
     document.getElementById("nome-visitante").value = "";
     perfilSelecionado = "";
     cnhSelecionada = "";
-    document
-      .querySelectorAll(".btn-chip-acesso")
-      .forEach((b) => b.classList.remove("ativo"));
+    document.querySelectorAll(".btn-chip-acesso").forEach((b) => b.classList.remove("ativo"));
   }
 
   modoViagemSelecionado = "";
   deslocamentoConfirmado = false;
-  document
-    .querySelectorAll(".btn-modo")
-    .forEach((btn) => btn.classList.remove("ativo"));
+  document.querySelectorAll(".btn-modo").forEach((btn) => btn.classList.remove("ativo"));
 
   document.getElementById("card-deslocamento").classList.remove("recolhido");
   document.getElementById("corpo-deslocamento").style.display = "flex";

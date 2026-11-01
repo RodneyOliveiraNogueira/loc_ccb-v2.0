@@ -160,7 +160,7 @@
 
                 <div class="box-grupo-botoes">
                   <span class="label-mini">PERFIL DE ACESSO</span>
-                  <div class="opcoes-mini">
+                  <div class="opcoes-perfil">
                     <button
                       type="button"
                       class="btn-chip-acesso"
@@ -184,6 +184,22 @@
                       onclick="selecionarPerfil('Prestador')"
                     >
                       Prestador
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-chip-acesso"
+                      id="perfil-Morador"
+                      onclick="selecionarPerfil('Morador')"
+                    >
+                      Morador
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-chip-acesso"
+                      id="perfil-Funcionário"
+                      onclick="selecionarPerfil('Funcionário')"
+                    >
+                      Funcionário
                     </button>
                   </div>
                 </div>
@@ -357,30 +373,9 @@
           </svg>
           Contato Portaria: (22) 99712-0131
         </a>
-
-        <section
-          id="painel-ultimos-acessos"
-          class="card-ultimos-acessos"
-          style="display: none"
-        >
-          <div class="header-ultimos">
-            <span>Acessos na Última Hora (Clique p/ Mapa)</span>
-            <button
-              type="button"
-              class="btn-refresh-acessos"
-              onclick="carregarUltimosAcessos()"
-              title="Atualizar lista"
-            >
-              Atualizar
-            </button>
-          </div>
-          <ul id="lista-ultimos-acessos" class="lista-ultimos">
-            <li class="item-vazio">Carregando registros...</li>
-          </ul>
-        </section>
       </div>
+      <!-- Fim da div coluna-esquerda logo acima -->
 
-      <!-- MAPA EXPANDIDO OCUPANDO TODO O ESPAÇO À DIREITA -->
       <section class="card-mapa" id="painel-mapa">
         <div class="mapa-topo">
           <span id="titulo-mapa-preview">Prévia do Trajeto no Condomínio</span>
@@ -393,6 +388,32 @@
           Ponto Azul: Portaria &nbsp;|&nbsp; Ponto Vermelho: Destino(s)
           selecionado(s)
         </p>
+      </section>
+
+      <section
+        id="painel-ultimos-acessos"
+        class="card-ultimos-acessos"
+        style="display: none"
+      >
+        <div class="header-ultimos">
+          <span
+            >Acessos do Dia <strong id="contador-acessos-dia">0</strong></span
+          >
+          <button
+            type="button"
+            class="btn-refresh-acessos"
+            onclick="carregarUltimosAcessos()"
+            title="Atualizar lista"
+          >
+            Atualizar
+          </button>
+        </div>
+        <small class="subtitulo-ultimos"
+          >Clique no registro para ver no mapa</small
+        >
+        <ul id="lista-ultimos-acessos" class="lista-ultimos">
+          <li class="item-vazio">Carregando registros...</li>
+        </ul>
       </section>
     </main>
 

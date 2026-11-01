@@ -27,7 +27,6 @@ body {
   flex: 1;
 }
 
-/* COLUNA ESQUERDA COM ESPAÇAMENTO LATERAL EQUILIBRADO */
 .coluna-esquerda {
   width: 100%;
   max-width: 440px;
@@ -37,6 +36,14 @@ body {
   margin: 0 auto;
   padding: 0 10px;
 }
+
+.coluna-direita {
+  display: none;
+  flex-direction: column;
+  width: 100%;
+  gap: 12px;
+}
+
 
 .header-texto {
   text-align: center;
@@ -243,6 +250,19 @@ body {
 .opcoes-mini {
   display: flex;
   gap: 6px;
+}
+
+.opcoes-perfil {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.opcoes-perfil .btn-chip-acesso {
+  flex: 1 1 30%;
+  min-width: 85px;
+  font-size: 0.73rem;
+  padding: 6px 4px;
 }
 
 .btn-chip-acesso {
@@ -595,33 +615,49 @@ body {
 }
 
 .card-ultimos-acessos {
-  margin-top: 10px;
   width: 100%;
   background-color: #161f30;
   border: 1px solid #26334d;
-  border-radius: 12px;
-  padding: 10px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .header-ultimos {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 800;
   color: #38bdf8;
   text-transform: uppercase;
-  margin-bottom: 8px;
+}
+
+.header-ultimos strong {
+  background-color: #0ea5e9;
+  color: #0f172a;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+}
+
+.subtitulo-ultimos {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-bottom: 4px;
 }
 
 .btn-refresh-acessos {
   background-color: #1e293b;
   border: 1px solid #334155;
   color: #cbd5e1;
-  padding: 3px 8px;
-  border-radius: 5px;
-  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -631,12 +667,12 @@ body {
 
 .lista-ultimos {
   list-style: none;
-  max-height: 145px;
+  flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-right: 2px;
+  gap: 8px;
+  padding-right: 4px;
 }
 
 .item-ultimo-acesso {
@@ -644,13 +680,13 @@ body {
   border: 1px solid #1e293b;
   border-left: 3px solid #0ea5e9;
   border-radius: 6px;
-  padding: 6px 8px;
-  font-size: 0.74rem;
+  padding: 8px 10px;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: background 0.15s;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .item-ultimo-acesso:hover {
@@ -671,7 +707,7 @@ body {
 
 .linha-base-acesso {
   color: #94a3b8;
-  font-size: 0.7rem;
+  font-size: 0.71rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -680,8 +716,8 @@ body {
 .item-vazio {
   text-align: center;
   color: #64748b;
-  font-size: 0.75rem;
-  padding: 12px 0;
+  font-size: 0.78rem;
+  padding: 20px 0;
 }
 
 .card-mapa {
@@ -692,7 +728,6 @@ body {
   border-radius: 14px;
   overflow: hidden;
   width: 100%;
-  height: 520px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
 }
 
@@ -762,12 +797,16 @@ body {
     justify-content: space-between;
   }
   .coluna-esquerda {
-    flex: 0 0 440px;
+    flex: 0 0 420px;
     margin: 0;
   }
   .card-mapa {
     display: flex;
     flex: 1;
-    height: calc(100vh - 65px);
+    height: calc(100vh - 56px);
+  }
+  .card-ultimos-acessos {
+    flex: 0 0 340px;
+    height: calc(100vh - 56px);
   }
 }
