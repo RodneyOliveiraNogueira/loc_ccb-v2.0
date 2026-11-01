@@ -528,17 +528,19 @@ body {
 }
 
 .btn-portaria {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   background-color: #d97706;
   color: #ffffff;
   text-align: center;
   text-decoration: none;
-  padding: 10px;
+  padding: 11px;
   border-radius: 10px;
   font-size: 0.88rem;
   font-weight: 700;
-  margin-top: 10px; /* Mantém o mesmo respiro em relação ao card cinza acima */
+  margin-top: 14px; /* Aumenta o espaço em relação ao card escuro */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
