@@ -44,7 +44,6 @@ body {
   gap: 12px;
 }
 
-
 .header-texto {
   text-align: center;
   margin-bottom: 8px;
@@ -536,9 +535,28 @@ body {
   text-align: center;
   text-decoration: none;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 0.88rem;
   font-weight: 700;
+  margin-top: 10px; /* Mantém o mesmo respiro em relação ao card cinza acima */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-contato-portaria-fora {
+  margin-top: 10px; /* Garante a simetria com o espaço acima */
+  width: 100%;
+  background-color: #059669;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 9px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .alerta-erro {
