@@ -29,19 +29,11 @@ body {
 
 .coluna-esquerda {
   width: 100%;
-  max-width: 440px;
+  max-width: 420px;
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: 0 auto;
-  padding: 0 10px;
-}
-
-.coluna-direita {
-  display: none;
-  flex-direction: column;
-  width: 100%;
-  gap: 12px;
 }
 
 .header-texto {
@@ -150,6 +142,66 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.box-documento-inicial {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.linha-doc-input {
+  display: flex;
+  gap: 6px;
+}
+
+.linha-doc-input input {
+  flex: 1;
+  background-color: #161f30;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #f8fafc;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.linha-doc-input input:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+
+.btn-outros-doc {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  padding: 0 14px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-outros-doc:hover {
+  border-color: #475569;
+  color: #f8fafc;
+}
+
+.btn-outros-doc.ativo {
+  background-color: #0ea5e9;
+  border-color: #38bdf8;
+  color: #0f172a;
+  font-weight: 800;
+}
+
+#bloco-pos-documento {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #1e293b;
 }
 
 .opcoes-deslocamento {
@@ -540,24 +592,7 @@ body {
   border-radius: 10px;
   font-size: 0.88rem;
   font-weight: 700;
-  margin-top: 14px; /* Aumenta o espaço em relação ao card escuro */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.btn-contato-portaria-fora {
-  margin-top: 10px; /* Garante a simetria com o espaço acima */
-  width: 100%;
-  background-color: #059669;
-  color: #ffffff;
-  text-decoration: none;
-  padding: 9px;
-  border-radius: 10px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+  margin-top: 14px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -613,7 +648,7 @@ body {
 }
 
 .btn-contato-portaria-fora {
-  margin-top: 8px;
+  margin-top: 10px;
   width: 100%;
   background-color: #059669;
   color: #ffffff;
@@ -644,6 +679,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  overflow: hidden;
 }
 
 .header-ultimos {
@@ -688,6 +724,7 @@ body {
 .lista-ultimos {
   list-style: none;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -826,7 +863,105 @@ body {
     height: calc(100vh - 56px);
   }
   .card-ultimos-acessos {
-    flex: 0 0 340px;
+    flex: 0 0 420px;
     height: calc(100vh - 56px);
   }
+}
+
+/* ESTILOS DE FOCO E CAMPOS PREENCHIDOS */
+.linha-doc-input input:focus,
+#placa:focus,
+#nome-visitante:focus,
+#lote:focus,
+#unidade:focus {
+  border-color: #ef4444 !important; /* Borda vermelha ao receber foco */
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+}
+
+.linha-doc-input input.preenchido,
+#placa.preenchido,
+#nome-visitante.preenchido {
+  background-color: #112a46 !important;
+  border-color: #0ea5e9 !important;
+  color: #38bdf8 !important;
+}
+
+/* CHIP DE ATALHO DO ÚLTIMO DESTINO */
+.chip-atalho-destino {
+  width: 100%;
+  background-color: rgba(14, 165, 233, 0.15);
+  border: 1px dashed #38bdf8;
+  color: #38bdf8;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.chip-atalho-destino:hover {
+  background-color: rgba(14, 165, 233, 0.3);
+  border-style: solid;
+}
+/* REMOVE QUALQUER BORDA VERMELHA DE FOCO E DEIXA O PADRÃO LIMPO */
+.linha-doc-input input:focus,
+#placa:focus,
+#nome-visitante:focus,
+#lote:focus,
+#unidade:focus {
+  outline: none;
+  border-color: #0ea5e9 !important;
+  box-shadow: 0 0 6px rgba(14, 165, 233, 0.3);
+}
+
+.linha-doc-input input.preenchido,
+#placa.preenchido,
+#nome-visitante.preenchido {
+  background-color: #112a46 !important;
+  border-color: #0ea5e9 !important;
+  color: #38bdf8 !important;
+}
+
+/* CORREÇÃO DOS CHIPS DE PERFIL E CNH (Contorno e texto azul claro, sem preenchimento forte) */
+.btn-chip-acesso.ativo {
+  background-color: #112a46 !important;
+  border-color: #0ea5e9 !important;
+  color: #38bdf8 !important;
+  font-weight: 700;
+  box-shadow: 0 0 6px rgba(14, 165, 233, 0.25);
+}
+
+/* BOTÃO VERDE DE ATALHO DO ÚLTIMO DESTINO (Fora do card cinza, abaixo do OK) */
+.chip-atalho-destino-verde {
+  width: 100%;
+  background-color: #065f46;
+  border: 1px solid #10b981;
+  color: #d1fae5;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.chip-atalho-destino-verde:hover {
+  background-color: #047857;
+  border-color: #34d399;
+}
+.card-deslocamento-opcional {
+  width: 100%;
+  background-color: #0f172a;
+  border: 1px solid #26334d;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
 }
